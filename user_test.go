@@ -59,3 +59,46 @@ func TestGetSubOrdinates(t *testing.T) {
 		})
 	}
 }
+
+func TestSetRoles(t *testing.T) {
+	tests := []struct {
+		name string
+		data []byte
+	}{
+		{
+			name: "unmarshall success",
+			data: []byte(`[
+				{
+				"Id": 1,
+				"Name": "System Administrator",
+				"Parent": 0
+				},
+				{
+				"Id": 2,
+				"Name": "Location Manager",
+				"Parent": 1
+				},
+				{
+				"Id": 3,
+				"Name": "Supervisor",
+				"Parent": 2
+				},
+				{
+				"Id": 4,
+				"Name": "Employee",
+				"Parent": 3
+				},
+				{
+				"Id": 5,
+				"Name": "Trainer",
+				"Parent": 3
+				}
+			 ]`),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetRoles(tt.data)
+		})
+	}
+}
