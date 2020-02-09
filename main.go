@@ -62,28 +62,6 @@ var SampleUsersRequest = []byte(`[
 	"Role": 5
 	}]`)
 
-func main() {
-	userHierachyTree = &UserHierachyTree{}
-	rolesRequest := SampleRolesRequest
-	usersRequest := SampleRolesRequest
-
-	setRolesErr := setRoles(rolesRequest)
-	if setRolesErr != nil {
-		fmt.Printf("error setting roles, msg: %v", setRolesErr.Error())
-		os.Exit(1)
-	}
-	setUsersErr := setUsers(usersRequest)
-	if setUsersErr != nil {
-		fmt.Printf("error setting users, msg: %v", setUsersErr.Error())
-		os.Exit(1)
-	}
-	_, subordinatesErr := getSubordinates(3)
-	if subordinatesErr != nil {
-		fmt.Printf("error getting subordinates, msg: %v", subordinatesErr.Error())
-		os.Exit(1)
-	}
-}
-
 func setRoles(rolesRequest []byte) error {
 	var roles []Role
 	err := json.Unmarshal(rolesRequest, &roles)
@@ -121,4 +99,28 @@ func getSubordinates(userID int) ([]byte, error) {
 		fmt.Println(string(subPayload))
 	}
 	return subPayload, nil
+}
+
+func main() {
+	//initialise tree
+	userHierachyTree = &UserHierachyTree{}
+	rolesRequest := SampleRolesRequest
+	usersRequest := SampleRolesRequest
+
+	setRolesErr := setRoles(rolesRequest)
+	if setRolesErr != nil {
+		fmt.Printf("error setting roles, msg: %v", setRolesErr.Error())
+		os.Exit(1)
+	}
+
+	setUsersErr := setUsers(usersRequest)
+	if setUsersErr != nil {
+		fmt.Printf("error setting users, msg: %v", setUsersErr.Error())
+		os.Exit(1)
+	}
+	_, subordinatesErr := getSubordinates(3)
+	if subordinatesErr != nil {
+		fmt.Printf("error getting subordinates, msg: %v", subordinatesErr.Error())
+		os.Exit(1)
+	}
 }
