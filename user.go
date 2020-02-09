@@ -130,7 +130,7 @@ func (tree *UserHierachyTree) FindTreeNodeByUserID(userID int) *TreeNode {
 	return node
 }
 
-func (treeNode *TreeNode) FindSubordinates(userID) []User {
+func (treeNode *TreeNode) FindSubordinates(userID int) []User {
 	var users []User
 	return users
 }
