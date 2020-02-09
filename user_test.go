@@ -188,3 +188,30 @@ func TestUserHierachy_SetUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestUserHierachyTree_SetUsers(t *testing.T) {
+	type fields struct {
+		Root *TreeNode
+	}
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *UserHierachyTree
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tree := &UserHierachyTree{
+				Root: tt.fields.Root,
+			}
+			if got := tree.SetUsers(tt.args.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UserHierachyTree.SetUsers() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

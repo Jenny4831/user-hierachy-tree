@@ -9,7 +9,9 @@ func main() {
 	// 	}
 
 	// 	command := CoverStringToCommand(input)
-	userHierachy := NewUserHierachy()
+	// userHierachy := NewUserHierachy()
+
+	//set roles
 	rolesRequest := []byte(`[
 		{
 		"Id": 1,
@@ -37,7 +39,9 @@ func main() {
 		"Parent": 3
 		}
 	 ]`)
-	userHierachy.SetRoles(rolesRequest)
+	var userHierachyTree *UserHierachyTree
+	userHierachyTree.SetRoles(rolesRequest)
+
 	// switch command {
 	// case SETROLES:
 	// 	os.Exit(0)

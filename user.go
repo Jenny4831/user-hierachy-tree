@@ -6,14 +6,12 @@ import (
 	"sort"
 )
 
-type IUserHierachyService interface {
+type UserHierachyService interface {
 	SetUsers(data []byte) []User
 	SetRoles(data []byte) []Role
+	GetSubOrdinates(userID int) []User
 }
-type UserHierachy struct {
-	RolesMap map[int]Role
-	Tree     *UserHierachyTree
-}
+
 type Role struct {
 	Id     int    `json:"Id"`
 	Name   string `json:"Name"`
@@ -26,111 +24,71 @@ type User struct {
 	Role int
 }
 
+// store hierachy of users
+type UserHierachyTree struct {
+	Root *TreeNode
+}
+
+type IUserHierachyTree interface {
+	FindTreeNodeByUserID(userID int) *TreeNode
+}
+
+type ITreeNode interface {
+	InsertRole(role Role)
+	InsertUser(user User)
+	FindByUserID(userID int) *TreeNode
+}
+
 // each node stores a map of users using user id as key,
 // User as value
 // using a map since there can be multiple users with the same role
-type UserNode struct {
-	RolesMap    map[int]*Role
-	Users       map[int]*User
-	Subordinate *UserNode
+type TreeNode struct {
+	Role         Role
+	Users        map[int]*User
+	Subordinates []*TreeNode
 }
 
-// store hierachy of users
-type UserHierachyTree struct {
-	Root *UserNode
-}
-
-func NewUserHierachy() *UserHierachy {
-	return &UserHierachy{
-		RolesMap: make(map[int]Role),
-		Tree:     &UserHierachyTree{},
+func NewTreeNode(role Role) *TreeNode {
+	return &TreeNode{
+		Role:         role,
+		Users:        make(map[int]*User),
+		Subordinates: []*TreeNode{},
 	}
 }
 
-// var RolesMap = make(map[int]Role)
-
-// func BFS(roleTree *RoleNode, role int) []User {
-// 	queue := []*RoleNode{}
-// 	queue = append(queue, roleTree)
-// 	result := []User{}
-// 	return BFSUtil(queue, result, role)
-// 	return []User{}
-// }
-
-// var root = 0
-
-// func BFSUtil(queue []*RoleNode, result []User, role int) []User {
-// 	if len(queue) == 0 {
-// 		return result
-// 	}
-// 	if queue[0].Left != nil && queue[0].Left.Value.Parent < role {
-
-// 	}
-// 	return BFSUtil(queue[1:], result, )
-// }
-
-//idea O(n)
-// linked list
-//linklist node {val int, Parent, list of users}
-// 3 -> 2 -> 1 -> 0
-// if node.val == user.Role
-// return users
-// users = append(users, node.users...)
-//node = node.parent
-
-//second  idea
-
-//users in map
-// user, found := map[id]User{etc}
-//
-// roles sorted create binary tree
-//    0
-//  1  4
-// 2 3 5 5
-
-// sample 0
-//       1(0)
-//      2(1)
-//    3(2)
-//  4(3)   5(3)
-// func(n *Node) FindSubordinatesForRole(role int)
-// users
-//     if n == nil return
-//     if role > n.left.role
-//        users = append(users, n.left.users)
-//        return FindSubordinatesForRole(n.left.role)
-//     return FindSubordinatesForRole(n.right.role)
-// getSubordinates()
-//  FindSubordinatesForRole(user.role)
-//
-//
-
 // unmarshall data and store roles in public role map,
 // key -> ID, value -> role
-func (userHierachy *UserHierachy) SetRoles(data []byte) {
+func (tree *UserHierachyTree) SetRoles(data []byte) {
 	var roles []Role
 	err := json.Unmarshal(data, &roles)
 	if err != nil {
 		fmt.Println("fail to unmarshal roles")
 	}
-
-	rolesMap := make(map[int]Role, len(roles))
-	if len(roles) == 0 {
-		fmt.Println("Roles list is empty")
-		return
-	}
+	sortRolesByParent(roles)
 	for idx := range roles {
 		role := roles[idx]
-		rolesMap[role.Id] = role
+		if tree.Root == nil {
+			tree.Root = NewTreeNode(role)
+		} else {
+			tree.Root.InsertRole(role)
+		}
 	}
-	userHierachy.RolesMap = rolesMap
 }
 
-// var UserHierachyTree = (root *UserNode
-// 	root *UserNode
-// )
+func (treeNode TreeNode) InsertRole(role Role) {
+	if treeNode.Role.Id == role.Parent {
+		newNode := NewTreeNode(role)
+		treeNode.Subordinates = append(treeNode.Subordinates, newNode)
+	} else {
+		for idx := range treeNode.Subordinates {
+			subordinate := treeNode.Subordinates[idx]
+			subordinate.InsertRole(role)
+		}
+	}
+}
+
 //sort users by role helpes constructing `UserHierachyTree`
-func (userHierachy *UserHierachy) SetUsers(data []byte) {
+func (tree *UserHierachyTree) SetUsers(data []byte) *UserHierachyTree {
 	var users []User
 	err := json.Unmarshal(data, &users)
 	if err != nil {
@@ -139,58 +97,48 @@ func (userHierachy *UserHierachy) SetUsers(data []byte) {
 	sortUsersByRole(users)
 	for idx := range users {
 		user := users[idx]
-		userRole := userHierachy.RolesMap[user.Role]
-		userHierachy.Tree.add(user, userRole)
+		tree.Root.InsertUser(user)
 	}
+	return tree
 }
 
-func (tree *UserHierachyTree) add(user User, userRole Role) {
-	if tree.Root == nil && userRole.Parent == 0 {
-		userMap := make(map[int]*User)
-		userMap[user.Id] = &user
-		rolesMap := make(map[int]*Role)
-		rolesMap[userRole.Id] = &userRole
-		userNode := UserNode{Users: userMap, RolesMap: rolesMap}
-		tree.Root = &userNode
+func (treeNode *TreeNode) InsertUser(user User) {
+	if treeNode.Role.Id == user.Role {
+		treeNode.Users[user.Id] = &user
 	} else {
-		tree.Root.insert(user, userRole)
-	}
-}
-
-// if inserting user's role parent equals to userNode's role
-// add inserting user as Subordinate of user node
-func (userNode *UserNode) insert(user User, role Role) {
-
-	if userNode.RolesMap[role.Parent] != nil {
-		if userNode.Subordinate == nil {
-			userMap := make(map[int]*User)
-			userMap[user.Id] = &user
-			rolesMap := make(map[int]*Role)
-			rolesMap[role.Id] = &role
-			subordinateNode := UserNode{Users: userMap, RolesMap: rolesMap}
-			userNode.Subordinate = &subordinateNode
-		} else if userNode.Subordinate.Users[user.Id] == nil {
-			userNode.Subordinate.Users[user.Id] = &user
-			if userNode.Subordinate.RolesMap[role.Id] == nil {
-				userNode.Subordinate.RolesMap[role.Id] = &role
-				fmt.Println(userNode.Subordinate.RolesMap)
-			}
+		for idx := range treeNode.Subordinates {
+			subordinate := treeNode.Subordinates[idx]
+			subordinate.InsertUser(user)
 		}
-	} else {
-		//check if should add to usr map
-
-		userNode.Subordinate.insert(user, role)
 	}
+}
+
+func (tree *UserHierachyTree) GetSubOrdinates(userID int) []User {
+	var users []User
+	userRoleNode := tree.FindTreeNodeByUserID(userID)
+	if userRoleNode == nil {
+		return users
+	}
+	if len(userRoleNode.Subordinates) > 0 {
+		users = userRoleNode.FindSubordinates(userID)
+	}
+	return users
 }
 
 func sortUsersByRole(users []User) {
-	// sorteUsers := users
 	sort.Slice(users,
 		func(i, j int) bool {
 			return users[i].Role < users[j].Role
 		})
-	// return users
 }
+
+func sortRolesByParent(roles []Role) {
+	sort.Slice(roles,
+		func(i, j int) bool {
+			return roles[i].Parent < roles[j].Parent
+		})
+}
+
 func GetSubOrdinates(userID int) []User {
 	var users []User
 	return users
