@@ -24,7 +24,7 @@ assuming user's role refers to role's Id.
 roles request in json fomat sample
 
 ```
-[	{
+roles = [	{
 	"Id": 1,
 	"Name": "System Administrator",
 	"Parent": 0
@@ -33,7 +33,7 @@ roles request in json fomat sample
 
 users request in json fomat sample
 ```
-[	{
+users = [	{
 	"Id": 1,
 	"Name": "Adam Administrator",
 	"Role": 1
