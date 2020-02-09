@@ -105,7 +105,7 @@ func main() {
 	//initialise tree
 	userHierachyTree = &UserHierachyTree{}
 	rolesRequest := SampleRolesRequest
-	usersRequest := SampleRolesRequest
+	usersRequest := SampleUsersRequest
 
 	setRolesErr := setRoles(rolesRequest)
 	if setRolesErr != nil {
