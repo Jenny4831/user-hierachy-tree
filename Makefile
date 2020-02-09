@@ -27,7 +27,7 @@ install: clean ## Compile sources and build binary
 
 build: ## Run your application
 	@echo "--> installing..."
-	@go install $(PACKAGE)/src || (echo "Compilation error" && exit 1)
+	@go install $(PACKAGE) || (echo "Compilation error" && exit 1)
 	@echo "Install OK"
 
 run: install ## Run your application
