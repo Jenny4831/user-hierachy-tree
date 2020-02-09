@@ -9,7 +9,7 @@ import (
 type UserHierachyService interface {
 	SetUsers(data []byte) []User
 	SetRoles(data []byte) []Role
-	GetSubOrdinates(userID int) []User
+	GetSubordinates(userID int) []User
 }
 
 type Role struct {
@@ -113,26 +113,44 @@ func (treeNode *TreeNode) InsertUser(user User) {
 	}
 }
 
-func (tree *UserHierachyTree) GetSubOrdinates(userID int) []User {
+func (tree *UserHierachyTree) GetSubordinates(userID int) []User {
 	var users []User
-	userRoleNode := tree.FindTreeNodeByUserID(userID)
+	userRoleNode := tree.Root.FindTreeNodeByUserID(userID)
 	if userRoleNode == nil {
 		return users
 	}
 	if len(userRoleNode.Subordinates) > 0 {
-		users = userRoleNode.FindSubordinates(userID)
+		userRoleNode.FindSubordinates(&users)
 	}
 	return users
 }
 
-func (tree *UserHierachyTree) FindTreeNodeByUserID(userID int) *TreeNode {
-	var node *TreeNode
-	return node
+func (treeNode *TreeNode) FindTreeNodeByUserID(userID int) *TreeNode {
+	if treeNode.Users[userID] != nil {
+		return treeNode
+	}
+	if len(treeNode.Subordinates) > 0 {
+		for idx := range treeNode.Subordinates {
+			subordinate := treeNode.Subordinates[idx]
+			subordinate.FindTreeNodeByUserID(userID)
+		}
+	}
+	return nil
 }
 
-func (treeNode *TreeNode) FindSubordinates(userID int) []User {
-	var users []User
-	return users
+func (treeNode *TreeNode) FindSubordinates(users *[]User) {
+	if treeNode == nil || len(treeNode.Users) == 0 {
+		return
+	}
+	for _, user := range treeNode.Users {
+		*users = append(*users, *user)
+	}
+	if len(treeNode.Subordinates) > 0 {
+		for idx := range treeNode.Subordinates {
+			subordinate := treeNode.Subordinates[idx]
+			subordinate.FindSubordinates(users)
+		}
+	}
 }
 
 func sortUsersByRole(users []User) {
@@ -148,10 +166,3 @@ func sortRolesByParent(roles []Role) {
 			return roles[i].Parent < roles[j].Parent
 		})
 }
-
-func GetSubOrdinates(userID int) []User {
-	var users []User
-	return users
-}
-
-// questions

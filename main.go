@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func main() {
 	// reader := bufio.NewReader(os.Stdin)
 	// for true {
@@ -42,5 +44,6 @@ func main() {
 	// var userHierachyTree *UserHierachyTree
 	userHierachyTree := &UserHierachyTree{}
 	userHierachyTree.SetRoles(rolesRequest)
-
+	fmt.Println(userHierachyTree.Root)
+	fmt.Println("Complete")
 }
