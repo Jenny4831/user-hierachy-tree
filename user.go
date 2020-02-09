@@ -39,15 +39,19 @@ type ITreeNode interface {
 	FindByUserID(userID int) *TreeNode
 }
 
-// each node stores a map of users using user id as key,
-// User as value
-// using a map since there can be multiple users with the same role
+// each node stores
+// Role, Users and Subordinates
+// Users store users using map, with user id as key and user as Value
+// allows more efficient check whether user is in current node's Role
+// Subordinates stores list of TreeNode, assuming multiple roles can have the same parent
+// Subordinate's role parent is current TreeNode
 type TreeNode struct {
 	Role         Role
 	Users        map[int]*User
 	Subordinates []*TreeNode
 }
 
+// Creates new tree node with given Role
 func NewTreeNode(role Role) *TreeNode {
 	return &TreeNode{
 		Role:         role,
@@ -56,8 +60,9 @@ func NewTreeNode(role Role) *TreeNode {
 	}
 }
 
-// unmarshall data and store roles in public role map,
-// key -> ID, value -> role
+// unmarshall data and store roles in UserHierachyTree,
+// sort roles list by role.Parent, this helps building the tree in role order
+// loops through sorted list and prepares tree with roles
 func (tree *UserHierachyTree) SetRoles(data []byte) {
 	var roles []Role
 	err := json.Unmarshal(data, &roles)
@@ -75,7 +80,7 @@ func (tree *UserHierachyTree) SetRoles(data []byte) {
 	}
 }
 
-func (treeNode TreeNode) InsertRole(role Role) {
+func (treeNode *TreeNode) InsertRole(role Role) {
 	if treeNode.Role.Id == role.Parent {
 		newNode := NewTreeNode(role)
 		treeNode.Subordinates = append(treeNode.Subordinates, newNode)
@@ -128,11 +133,10 @@ func (tree *UserHierachyTree) GetSubordinates(userID int) []User {
 func (treeNode *TreeNode) FindTreeNodeByUserID(userID int) *TreeNode {
 	if treeNode.Users[userID] != nil {
 		return treeNode
-	}
-	if len(treeNode.Subordinates) > 0 {
+	} else if len(treeNode.Subordinates) > 0 {
 		for idx := range treeNode.Subordinates {
 			subordinate := treeNode.Subordinates[idx]
-			subordinate.FindTreeNodeByUserID(userID)
+			return subordinate.FindTreeNodeByUserID(userID)
 		}
 	}
 	return nil
@@ -142,12 +146,13 @@ func (treeNode *TreeNode) FindSubordinates(users *[]User) {
 	if treeNode == nil || len(treeNode.Users) == 0 {
 		return
 	}
-	for _, user := range treeNode.Users {
-		*users = append(*users, *user)
-	}
+
 	if len(treeNode.Subordinates) > 0 {
 		for idx := range treeNode.Subordinates {
 			subordinate := treeNode.Subordinates[idx]
+			for _, user := range subordinate.Users {
+				*users = append(*users, *user)
+			}
 			subordinate.FindSubordinates(users)
 		}
 	}

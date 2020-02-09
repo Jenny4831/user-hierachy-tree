@@ -1,19 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
+
+var Tree *UserHierachyTree
 
 func main() {
-	// reader := bufio.NewReader(os.Stdin)
-	// for true {
-	// 	input, inputErr := reader.ReadString('\n')
-	// 	if inputErr != nil {
-	// 		fmt.Fprintln(os.Stderr, inputErr)
-	// 	}
-
-	// 	command := CoverStringToCommand(input)
-	// userHierachy := NewUserHierachy()
-
-	//set roles
+	Tree = &UserHierachyTree{}
 	rolesRequest := []byte(`[
 		{
 		"Id": 1,
@@ -41,9 +36,53 @@ func main() {
 		"Parent": 3
 		}
 	 ]`)
-	// var userHierachyTree *UserHierachyTree
-	userHierachyTree := &UserHierachyTree{}
-	userHierachyTree.SetRoles(rolesRequest)
-	fmt.Println(userHierachyTree.Root)
-	fmt.Println("Complete")
+
+	usersRequest := []byte(`[
+		{
+		"Id": 1,
+		"Name": "Adam Admin",
+		"Role": 1
+		},
+		{
+		"Id": 2,
+		"Name": "Emily Employee",
+		"Role": 4
+		},
+		{
+		"Id": 3,
+		"Name": "Sam Supervisor",
+		"Role": 3
+		},
+		{
+		"Id": 4,
+		"Name": "Mary Manager",
+		"Role": 2
+		},
+		{"Id": 5,
+		"Name": "Steve Trainer",
+		"Role": 5
+		}]`,
+	)
+
+	setRoles(rolesRequest)
+	setUsers(usersRequest)
+	getSubordinates(3)
+}
+
+func setRoles(rolesRequest []byte) {
+	Tree.SetRoles(rolesRequest)
+}
+
+func setUsers(rolesRequest []byte) {
+	Tree.SetUsers(rolesRequest)
+}
+
+func getSubordinates(userID int) {
+	subordinates := Tree.GetSubordinates(userID)
+	subPayload, subPayloadErr := json.Marshal(subordinates)
+	if subPayloadErr != nil {
+		fmt.Errorf("error when encoding users, msg: %v",
+			subPayloadErr)
+	}
+	fmt.Println(string(subPayload))
 }
