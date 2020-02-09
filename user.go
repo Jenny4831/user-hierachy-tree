@@ -151,7 +151,7 @@ func (treeNode *TreeNode) FindTreeNodeByUserID(userID int) *TreeNode {
 
 // returns subordinates of current treeNode
 // if treeNode is nil or no subordinates, return
-// otherwise loop through subordinates and append users to list
+// otherwise loop through subordinates recusively append users to list
 func (treeNode *TreeNode) FindSubordinateUsers(users *[]User) {
 	if treeNode == nil || len(treeNode.Subordinates) == 0 {
 		return
