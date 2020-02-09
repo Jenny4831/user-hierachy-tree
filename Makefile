@@ -1,7 +1,6 @@
 # VARIABLES
 PACKAGE="github.com/Jenny4831/project-d"
 BINARY_NAME="userapp"
-TEST_TIME_OUT='50s'
 GOBASE := $(shell pwd)
 GOBIN := $(GOBASE)/bin
 GOFILES := $(wildcard *.go)
@@ -18,7 +17,7 @@ clean: ## Trash binary files
 test: ## Run all tests
 	@echo "--> testing..."
 	@go clean -testcache
-	@go test -timeout ${TEST_TIME_OUT} -v $(PACKAGE)/...
+	@go test -timeout -v $(PACKAGE)/...
 
 install: clean ## Compile sources and build binary
 	@echo "--> building..."

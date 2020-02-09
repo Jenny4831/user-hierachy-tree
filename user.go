@@ -126,7 +126,7 @@ func (tree *UserHierachyTree) GetSubordinates(userID int) []User {
 		return users
 	}
 	if len(userRoleNode.Subordinates) > 0 {
-		userRoleNode.FindSubordinates(&users)
+		userRoleNode.FindSubordinateUsers(&users)
 	}
 	return users
 }
@@ -135,6 +135,9 @@ func (tree *UserHierachyTree) GetSubordinates(userID int) []User {
 // if not found and there are subordinates
 // recursively find user id in subordinates map
 func (treeNode *TreeNode) FindTreeNodeByUserID(userID int) *TreeNode {
+	if treeNode == nil {
+		return nil
+	}
 	if treeNode.Users[userID] != nil {
 		return treeNode
 	} else if len(treeNode.Subordinates) > 0 {
@@ -149,7 +152,7 @@ func (treeNode *TreeNode) FindTreeNodeByUserID(userID int) *TreeNode {
 // returns subordinates of current treeNode
 // if treeNode is nil or no subordinates, return
 // otherwise loop through subordinates and append users to list
-func (treeNode *TreeNode) FindSubordinates(users *[]User) {
+func (treeNode *TreeNode) FindSubordinateUsers(users *[]User) {
 	if treeNode == nil || len(treeNode.Subordinates) == 0 {
 		return
 	}
@@ -158,7 +161,7 @@ func (treeNode *TreeNode) FindSubordinates(users *[]User) {
 		for _, user := range subordinate.Users {
 			*users = append(*users, *user)
 		}
-		subordinate.FindSubordinates(users)
+		subordinate.FindSubordinateUsers(users)
 	}
 }
 

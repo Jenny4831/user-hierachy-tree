@@ -447,30 +447,68 @@ func TestUserHierachyTree_GetSubordinates(t *testing.T) {
 }
 
 func TestTreeNode_FindTreeNodeByUserID(t *testing.T) {
-	type fields struct {
-		Role         Role
-		Users        map[int]*User
-		Subordinates []*TreeNode
-	}
-	type args struct {
-		userID int
-	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *TreeNode
+		name     string
+		rootNode *TreeNode
+		userID   int
+		want     *TreeNode
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Find tree node, user exists",
+			rootNode: &TreeNode{
+				Role: Role{
+					Id:     1,
+					Name:   "System Administrator",
+					Parent: 0,
+				},
+				Users: make(map[int]*User),
+				Subordinates: []*TreeNode{{
+					Role: Role{
+						Id:     2,
+						Name:   "Location Manager",
+						Parent: 1,
+					},
+					Users: map[int]*User{
+						3: &User{Id: 3, Name: "Mary Manager", Role: 2},
+					},
+				}},
+			},
+			userID: 3,
+			want: &TreeNode{
+				Role: Role{
+					Id:     2,
+					Name:   "Location Manager",
+					Parent: 1,
+				},
+				Users: map[int]*User{
+					3: &User{
+						Id: 3, Name: "Mary Manager", Role: 2,
+					}},
+			},
+		},
+		{
+			name: "Find tree node by user ID, user does not exists",
+			rootNode: &TreeNode{
+				Role: Role{
+					Id:     1,
+					Name:   "System Administrator",
+					Parent: 0,
+				},
+				Users:        make(map[int]*User),
+				Subordinates: []*TreeNode{}},
+			userID: 2,
+			want:   nil,
+		},
+		{
+			name:     "Find tree node by user ID, user hierachy root is nil",
+			rootNode: nil,
+			userID:   2,
+			want:     nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			treeNode := &TreeNode{
-				Role:         tt.fields.Role,
-				Users:        tt.fields.Users,
-				Subordinates: tt.fields.Subordinates,
-			}
-			if got := treeNode.FindTreeNodeByUserID(tt.args.userID); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.rootNode.FindTreeNodeByUserID(tt.userID); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TreeNode.FindTreeNodeByUserID() = %v, want %v", got, tt.want)
 			}
 		})
@@ -495,46 +533,214 @@ func Test_sortUsersByRole(t *testing.T) {
 }
 
 func Test_sortRolesByParent(t *testing.T) {
-	type args struct {
-		roles []Role
-	}
 	tests := []struct {
-		name string
-		args args
+		name  string
+		roles []Role
+		want  []Role
 	}{
-		// TODO: Add test cases.
+		{
+			name: "ordered list",
+			roles: []Role{
+				{Id: 1, Name: "Admin", Parent: 0},
+				{Id: 2, Name: "Supervisor", Parent: 1},
+				{Id: 3, Name: "Manager", Parent: 2},
+			},
+			want: []Role{
+				{Id: 1, Name: "Admin", Parent: 0},
+				{Id: 2, Name: "Supervisor", Parent: 1},
+				{Id: 3, Name: "Manager", Parent: 2},
+			},
+		},
+		{
+			name: "unordered list",
+			roles: []Role{
+				{Id: 3, Name: "Manager", Parent: 2},
+				{Id: 1, Name: "Admin", Parent: 0},
+				{Id: 2, Name: "Supervisor", Parent: 1},
+			},
+			want: []Role{
+				{Id: 1, Name: "Admin", Parent: 0},
+				{Id: 2, Name: "Supervisor", Parent: 1},
+				{Id: 3, Name: "Manager", Parent: 2},
+			},
+		},
+		{
+			name: "unordered list, same parent",
+			roles: []Role{
+				{Id: 2, Name: "Supervisor", Parent: 1},
+				{Id: 3, Name: "Manager", Parent: 1},
+				{Id: 1, Name: "Admin", Parent: 0},
+			},
+			want: []Role{
+				{Id: 1, Name: "Admin", Parent: 0},
+				{Id: 2, Name: "Supervisor", Parent: 1},
+				{Id: 3, Name: "Manager", Parent: 1},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sortRolesByParent(tt.args.roles)
+			sortRolesByParent(tt.roles)
 		})
 	}
 }
 
-func TestTreeNode_FindSubordinates(t *testing.T) {
-	type fields struct {
-		Role         Role
-		Users        map[int]*User
-		Subordinates []*TreeNode
-	}
-	type args struct {
-		users *[]User
-	}
+func TestTreeNode_FindSubordinateUsers(t *testing.T) {
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name string
+		tree *UserHierachyTree
+		want []User
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Get subordinates, one level hierachy",
+			tree: &UserHierachyTree{
+				Root: &TreeNode{
+					Role: Role{
+						Id:     1,
+						Name:   "System Administrator",
+						Parent: 0,
+					},
+					Users: make(map[int]*User),
+					Subordinates: []*TreeNode{{
+						Role: Role{
+							Id:     2,
+							Name:   "Location Manager",
+							Parent: 1,
+						},
+						Users: map[int]*User{
+							3: &User{Id: 3, Name: "Mary Manager", Role: 2},
+						},
+						Subordinates: []*TreeNode{},
+					}},
+				},
+			},
+			want: []User{{Id: 3, Name: "Mary Manager", Role: 2}},
+		},
+		{
+			name: "Get multiple subordinates, one level hierachy",
+			tree: &UserHierachyTree{
+				Root: &TreeNode{
+					Role: Role{
+						Id:     1,
+						Name:   "System Administrator",
+						Parent: 0,
+					},
+					Users: map[int]*User{1: &User{Id: 1, Name: "Adam Admin", Role: 1}},
+					Subordinates: []*TreeNode{
+						{
+							Role: Role{
+								Id:     2,
+								Name:   "Location Manager",
+								Parent: 1,
+							},
+							Users: map[int]*User{
+								3: &User{Id: 3, Name: "Mary Manager", Role: 2},
+							},
+							Subordinates: []*TreeNode{},
+						},
+						{
+							Role: Role{
+								Id:     3,
+								Name:   "Supervisor",
+								Parent: 1,
+							},
+							Users: map[int]*User{
+								2: &User{Id: 2, Name: "Sam Supervisor", Role: 3},
+							},
+							Subordinates: []*TreeNode{},
+						},
+					},
+				},
+			},
+			want: []User{
+				{Id: 3, Name: "Mary Manager", Role: 2},
+				{Id: 2, Name: "Sam Supervisor", Role: 3},
+			},
+		},
+		{
+			name: "Get multiple subordinates, multi lever hierachy",
+			tree: &UserHierachyTree{
+				Root: &TreeNode{
+					Role: Role{
+						Id:     1,
+						Name:   "System Administrator",
+						Parent: 0,
+					},
+					Users: map[int]*User{
+						1: &User{Id: 1, Name: "Mary Manager", Role: 2},
+					},
+					Subordinates: []*TreeNode{
+						{
+							Role: Role{
+								Id:     2,
+								Name:   "Location Manager",
+								Parent: 1,
+							},
+							Users: map[int]*User{
+								3: &User{Id: 3, Name: "Mary Manager", Role: 2},
+							},
+							Subordinates: []*TreeNode{
+								{
+									Role: Role{
+										Id:     4,
+										Name:   "Assistant",
+										Parent: 2,
+									},
+									Users: map[int]*User{
+										4: &User{Id: 4, Name: "Ella Assistant", Role: 4},
+									},
+									Subordinates: []*TreeNode{},
+								},
+							},
+						},
+						{
+							Role: Role{
+								Id:     3,
+								Name:   "Supervisor",
+								Parent: 1,
+							},
+							Users: map[int]*User{
+								2: &User{Id: 2, Name: "Sam Supervisor", Role: 3},
+							},
+							Subordinates: []*TreeNode{},
+						},
+					},
+				},
+			},
+			want: []User{
+				{Id: 3, Name: "Mary Manager", Role: 2},
+				{Id: 4, Name: "Ella Assistant", Role: 4},
+				{Id: 2, Name: "Sam Supervisor", Role: 3},
+			},
+		},
+		{
+			name: "root is nil, empty list",
+			tree: &UserHierachyTree{Root: nil},
+			want: []User{},
+		},
+		{
+			name: "no subordinates",
+			tree: &UserHierachyTree{Root: &TreeNode{
+				Role: Role{
+					Id:     1,
+					Name:   "System Administrator",
+					Parent: 0,
+				},
+				Users: map[int]*User{
+					1: &User{Id: 1, Name: "Mary Manager", Role: 2},
+				},
+				Subordinates: []*TreeNode{},
+			}},
+			want: []User{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			treeNode := &TreeNode{
-				Role:         tt.fields.Role,
-				Users:        tt.fields.Users,
-				Subordinates: tt.fields.Subordinates,
+			got := []User{}
+			tt.tree.Root.FindSubordinateUsers(&got)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TreeNode.FindTreeNodeByUserID() = %v, want %v", got, tt.want)
 			}
-			treeNode.FindSubordinates(tt.args.users)
 		})
 	}
 }
