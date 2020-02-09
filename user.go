@@ -125,6 +125,16 @@ func (tree *UserHierachyTree) GetSubOrdinates(userID int) []User {
 	return users
 }
 
+func (tree *UserHierachyTree) FindTreeNodeByUserID(userID int) *TreeNode {
+	var node *TreeNode
+	return node
+}
+
+func (treeNode *TreeNode) FindSubordinates(userID) []User {
+	var users []User
+	return users
+}
+
 func sortUsersByRole(users []User) {
 	sort.Slice(users,
 		func(i, j int) bool {

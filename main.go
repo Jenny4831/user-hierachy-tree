@@ -39,22 +39,8 @@ func main() {
 		"Parent": 3
 		}
 	 ]`)
-	var userHierachyTree *UserHierachyTree
+	// var userHierachyTree *UserHierachyTree
+	userHierachyTree := &UserHierachyTree{}
 	userHierachyTree.SetRoles(rolesRequest)
 
-	// switch command {
-	// case SETROLES:
-	// 	os.Exit(0)
-	// case SETUSERS:
-	// 	os.Exit(0)
-	// case GETSUBORDINATES:
-	// 	os.Exit(0)
-	// case HELP:
-	// 	PrintInstructions()
-	// case EXIT:
-	// 	os.Exit(0)
-	// default:
-	// 	PrintInstructions()
-	// }
-	// }
 }
