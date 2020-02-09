@@ -17,7 +17,7 @@ clean: ## Trash binary files
 test: ## Run all tests
 	@echo "--> testing..."
 	@go clean -testcache
-	@go test -timeout -v $(PACKAGE)/...
+	@go test -v $(PACKAGE)/...
 
 install: clean ## Compile sources and build binary
 	@echo "--> building..."
