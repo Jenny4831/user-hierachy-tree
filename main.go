@@ -5,10 +5,11 @@ import (
 	"fmt"
 )
 
-var Tree *UserHierachyTree
+var userHierachyTree *UserHierachyTree
 
 func main() {
-	Tree = &UserHierachyTree{}
+
+	userHierachyTree = &UserHierachyTree{}
 	rolesRequest := []byte(`[
 		{
 		"Id": 1,
@@ -70,15 +71,27 @@ func main() {
 }
 
 func setRoles(rolesRequest []byte) {
-	Tree.SetRoles(rolesRequest)
+	var roles []Role
+	err := json.Unmarshal(rolesRequest, &roles)
+	if err != nil {
+		fmt.Printf("fail to unmarshal roles, errMsg: %v", err)
+		return
+	}
+	userHierachyTree.SetRoles(roles)
 }
 
-func setUsers(rolesRequest []byte) {
-	Tree.SetUsers(rolesRequest)
+func setUsers(usersRequest []byte) {
+	var users []User
+	err := json.Unmarshal(usersRequest, &users)
+	if err != nil {
+		fmt.Printf("fail to unmarshal users, errMsg: %v", err)
+		return
+	}
+	userHierachyTree.SetUsers(users)
 }
 
 func getSubordinates(userID int) {
-	subordinates := Tree.GetSubordinates(userID)
+	subordinates := userHierachyTree.GetSubordinates(userID)
 	subPayload, subPayloadErr := json.Marshal(subordinates)
 	if subPayloadErr != nil {
 		fmt.Errorf("error when encoding users, msg: %v",
