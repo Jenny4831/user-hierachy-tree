@@ -100,20 +100,20 @@ func (tree *UserHierachyTree) SetUsers(users []User) error {
 	sortUsersByRole(users)
 	for idx := range users {
 		user := users[idx]
-		tree.Root.InsertUser(user)
+		tree.Root.insertUser(user)
 	}
 	return nil
 }
 
 // if found user's role in current node's role, add user to Users map
 // else loop through subordinates and recursively find treenode with user's role
-func (treeNode *TreeNode) InsertUser(user User) {
+func (treeNode *TreeNode) insertUser(user User) {
 	if treeNode.Role.Id == user.Role {
 		treeNode.Users[user.Id] = &user
 	} else {
 		for idx := range treeNode.Subordinates {
 			subordinate := treeNode.Subordinates[idx]
-			subordinate.InsertUser(user)
+			subordinate.insertUser(user)
 		}
 	}
 }
