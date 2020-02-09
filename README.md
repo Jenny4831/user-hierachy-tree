@@ -87,3 +87,15 @@ As shown from tree above, `TreeNode` stores the `Role`, a map of users where use
 `getSubordinates(userId)`
 - finds tree node with user map that contains given `userID`
 - recursively returns the subordinates and it's subordinates of found tree node
+
+### simple app included
+make run print same roles, users, and results from getting subordinates for user id 3 and 1
+```
+make
+build                          Run your application
+clean                          Trash binary files
+install                        Compile sources and build binary
+run                            Run your application
+test                           Run all tests
+usage                          List available targets
+```

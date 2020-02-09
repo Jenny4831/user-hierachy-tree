@@ -118,9 +118,24 @@ func main() {
 		fmt.Printf("error setting users, msg: %v", setUsersErr.Error())
 		os.Exit(1)
 	}
+
+	//sample roles
+	fmt.Printf("Sample roles\n:%s\n", string(SampleRolesRequest))
+
+	//sample roles
+	fmt.Printf("Sample users\n:%s\n", string(SampleUsersRequest))
+
+	fmt.Println("getSubordinates(3):")
 	_, subordinatesErr := getSubordinates(3)
 	if subordinatesErr != nil {
 		fmt.Printf("error getting subordinates, msg: %v", subordinatesErr.Error())
+		os.Exit(1)
+	}
+
+	fmt.Println("getSubordinates(1):")
+	_, subsErr := getSubordinates(1)
+	if subsErr != nil {
+		fmt.Printf("error getting subordinates, msg: %v", subsErr.Error())
 		os.Exit(1)
 	}
 }
