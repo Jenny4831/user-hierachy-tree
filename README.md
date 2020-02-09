@@ -1,10 +1,14 @@
 # user-hierachy-tree
 
+
+## Tech used
+- Go
+
 ## Introduction
 
 User Hierachy tree is a data structure used to store Roles in a tree with references to each role's subordinate.
 
-### main functionality
+### Main functionality
 
 ```
 seRoles(roles)
@@ -14,7 +18,11 @@ getSubordinates(userID)
 
 ## Usage
 
+
+assuming user's role refers to role's Id.
+
 roles request in json fomat sample
+
 ```
 [	{
 	"Id": 1,
@@ -32,10 +40,9 @@ users request in json fomat sample
   }
 ]
 ```
-assuming user's role refers to role's Id.
 
+```
 func main() {
-	//initialise tree
 	userHierachyTree = &UserHierachyTree{}
 
 	rolesRequest := SampleRolesRequest
@@ -60,8 +67,6 @@ func main() {
 }
 ```
 
-## Tech used
-- Go
 
 ## Implementation overview
 
