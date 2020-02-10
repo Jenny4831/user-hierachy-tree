@@ -1,5 +1,5 @@
 # VARIABLES
-PACKAGE="github.com/Jenny4831/project-d"
+PACKAGE="github.com/Jenny4831/user-hierachy-tree"
 BINARY_NAME="userapp"
 GOBASE := $(shell pwd)
 GOBIN := $(GOBASE)/bin
