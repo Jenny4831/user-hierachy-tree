@@ -9,9 +9,9 @@ import (
 //assumption:
 //Id is unique
 type Role struct {
-	Id     int    `json:"Id"`
-	Name   string `json:"Name"`
-	Parent int    `json:"Parent"`
+	Id     int
+	Name   string
+	Parent int
 }
 
 //User struct
