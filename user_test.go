@@ -6,13 +6,7 @@ import (
 	"testing"
 )
 
-type TreeRequest struct {
-	Root              *TreeNode
-	FirstSubordinate  *TreeNode
-	SecondSubordinate *TreeNode
-}
-
-func defaultTreeForTest(treeRequest TreeRequest) *UserHierachyTree {
+func defaultTreeForTest() *UserHierachyTree {
 	userHierachyTree := &UserHierachyTree{}
 	root := NewTreeNode(Role{
 		Id:     1,
@@ -29,15 +23,7 @@ func defaultTreeForTest(treeRequest TreeRequest) *UserHierachyTree {
 		Name:   "Supervisor",
 		Parent: 2,
 	})
-	// if treeRequest.Root != nil {
-	// 	root = treeRequest.Root
-	// }
-	// if treeRequest.FirstSubordinates !=nil {
-	// 	firstSubordinates = treeRequest.FirstSubordinates
-	// }
-	// if treeRequest.SecondSubordinates != nil {
-	// 	secondSubordinates = treeRequest.SecondSubordinates
-	// }
+
 	userHierachyTree.Root = root
 	userHierachyTree.Root.Subordinates = []*TreeNode{firstSubordinate}
 	firstSubordinate.Subordinates = []*TreeNode{secondSubordinate}
@@ -76,7 +62,7 @@ func TestUserHierachyTree_SetRoles(t *testing.T) {
 					Parent: 2,
 				},
 			},
-			want:    defaultTreeForTest(TreeRequest{}),
+			want:    defaultTreeForTest(),
 			wantErr: nil,
 		},
 		{
@@ -99,7 +85,7 @@ func TestUserHierachyTree_SetRoles(t *testing.T) {
 					Parent: 1,
 				},
 			},
-			want:    defaultTreeForTest(TreeRequest{}),
+			want:    defaultTreeForTest(),
 			wantErr: nil,
 		},
 		{
